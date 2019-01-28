@@ -105,50 +105,82 @@ class Complex
 int main()
 {
 	cout<<"Menu for Complex no operations:\n";
-	cout<<"1.Insert Value.\n";
-	cout<<"2.Add.\n";
-	cout<<"3.Substract.\n";
-	cout<<"4.Exit.\n";
+	//cout<<"1.Insert Value.\n";
+	cout<<"1.Add.\n";
+	cout<<"2.Substract.\n";
+	cout<<"3.Exit.\n";
+	
+	Complex c1,c2,c3;
+	
+	cout<<"Enter the complex no(a+ib)\n";
+	cin>>c1;
+	cout<<"The number:\n"<<c1<<"\n";
+	
 
 	while(true)
 	{
 		int choice;
-		Complex c1,c2,c3;
+		//Complex c1,c2,c3;
 
 		cout<<"Enter choice:";
 		cin>>choice;
 
 		switch(choice)
 		{
-			case 1:
-				cout<<"Enter the complex no\n";
+			/*case :
+				cout<<"Enter the complex no(a+ib)\n";
 				cin>>c1;
 				cout<<"Input successfull\n"<<c1<<"\n";
-				break;
+				break;*/
+			case 1:
+				/*cout<<"Complex no 1\n";
+				cin>>c1;*/
+				cout<<"Complex no 2\n";
+				cin>>c2;
+				c1=c1+c2;
+				//int y;
+				cout<<"Addition Successfull.\nResult= "<<c1<<"\n";
+				/*cout<<"Want to add another number?(1/0)\n";
+				cin>>y;
+				if(y==1)
+				{
+				    cout<<"Enter another complex no\n";
+				    Complex c4;
+				    cin>>c4;
+				    c1=c1+c4;
+				    cout<<c1;
+				  }*/
+				 break;
+				  
+				    
+				
 			case 2:
-				cout<<"Complex no 1\n";
-				cin>>c1;
-				cout<<"Complex no 2\n";
+			    cout<<"Complex no 2\n";
 				cin>>c2;
-				c3=c1+c2;
-				cout<<"Addition Successfull.\nResult= "<<c3<<"\n";
-				break;
-			case 3:
-				cout<<"Complex no 1\n";
-				cin>>c1;
-				cout<<"Complex no 2\n";
-				cin>>c2;
-				c3=c1-c2;
-				cout<<"Substraction Successfull.\nResult= "<<c3<<"\n";
-				break;	
+				c1=c1-c2;
+				//int k;
+				cout<<"Substraction Successfull.\nResult= "<<c1<<"\n";
+				/*cout<<"Want to add another number?(1/0)\n";
+				cin>>k;
+				if(k==1)
+				{
+				    cout<<"Enter another complex no\n";
+				    Complex c4;
+				    cin>>c4;
+				    c1=c1-c4;
+				    cout<<c1;
+				  }*/
+				 break;
+				  
+				
 
-			case 4:
+			case 3:
 				break;
 			default:
 				cout<<"Wrong choice\n";
 		}
 
-		if(choice==4)
+		if(choice==3)
 			break;
 
 	}
@@ -159,6 +191,7 @@ int main()
 
 
 				
+
 
 
 
