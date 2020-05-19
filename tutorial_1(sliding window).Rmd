@@ -1,0 +1,202 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+
+
+```{r}
+install.packages("harmonicmeanp")
+```
+```{r}
+library(harmonicmeanp)
+```
+
+
+```{r}
+stopifnot(packageVersion("harmonicmeanp")>=3.0)
+```
+
+
+```{r}
+system.time((gwas = read.delim("http://www.danielwilson.me.uk/files/Neuroticism_ch12.txt",header=TRUE,as.is=TRUE)))
+```
+```{r}
+head(gwas)
+```
+```{r}
+L = 6524432
+gwas$w = 1/L
+R = 1:nrow(gwas)
+(HMP.R = sum(gwas$w[R])/sum(gwas$w[R]/gwas$p[R]))
+```
+```{r}
+#false positive rate
+alpha = 0.05
+#computing HMP significance threshold
+alpha.L = qharmonicmeanp(alpha,L)
+print(alpha.L)
+```
+```{r}
+w.R = sum(gwas$w[R])
+print(w.R)
+alpha.L*w.R
+```
+```{r}
+w.R*pharmonicmeanp(HMP.R/w.R,L=L,lower.tail=TRUE)
+p.hmp(gwas$p[R],gwas$w[R],L)
+```
+```{r}
+#multiple testing threshold
+w.R*alpha
+```
+```{r}
+#asymptotically exact p value in one step
+p.hmp(gwas$p[R],gwas$w[R],L)
+
+
+```
+```{r}
+R = which(gwas$pos%%2==0)
+p.hmp(gwas$p[R],gwas$w[R],L
+      )
+```
+```{r}
+w.R = sum(gwas$w[R])
+alpha*w.R
+```
+```{r}
+R = which(gwas$pos%%2==1)
+p.hmp(gwas$p[R],gwas$w[R],L)
+
+```
+```{r}
+w.R = sum(gwas$w[R])
+alpha*w.R
+```
+```{r}
+#check adjusted p values
+R = which(gwas$pos%%2==0)
+p.R = p.hmp(gwas$p[R],gwas$w[R],L)
+w.R = sum(gwas$w[R])
+p.R.adjust = p.R/w.R
+print(p.R.adjust)
+```
+```{r}
+R = which(gwas$pos%%2==1)
+p.R = p.hmp(gwas$p[R],gwas$w[R],L)
+w.R = sum(gwas$w[R])
+p.R.adjust = p.R/w.R
+print(p.R.adjust)
+```
+```{r}
+R = 1:156229
+p.R = p.hmp(gwas$p[R],gwas$w[R],L)
+w.R = sum(gwas$w[R])
+p.R.adjusted = p.R/w.R
+print(p.R.adjusted)
+```
+```{r}
+R = 156229:312457
+p.R = p.hmp(gwas$p[R],gwas$w[R],L)
+w.R = sum(gwas$w[R])
+p.R.adjusted = p.R/w.R
+print(p.R.adjusted)
+```
+```{r}
+#defining sliding windows of 50 megabase overlapping at 10 megabase intervals
+
+win.50M.beg = outer(0:floor(max(gwas$pos/50e6-1)),(0:4)/5,"+")*50e6
+win.50M.beg = win.50M.beg[win.50M.beg+50e6<=max(gwas$pos)]
+#find combined p-value for each window
+
+system.time({
+    p.50M = sapply(win.50M.beg,function(beg){
+      R = which(gwas$pos>=beg & gwas$pos<(beg+50e6))
+      p.hmp(gwas$p[R],gwas$w[R],L)
+    })
+})
+```
+```{r}
+#calcute sums of weights for each combined test
+system.time({
+  w.50M = sapply(win.50M.beg,function(beg){
+    R = which(gwas$pos>=beg & gwas$pos<(beg+50e6))
+    sum(gwas$w[R])
+  })
+})
+```
+```{r}
+p.50M.adj = p.50M/w.50M
+```
+```{r}
+#plotting
+gwas$p.adj = gwas$p/gwas$w
+plot(gwas$pos/1e6,-log10(gwas$p.adj),pch = ".",xlab = "Position on chromosome 12(megabses)",ylab = "Adjusted significance (-log10 adjusted p-value)",ylim = sort(-log10(range(gwas$p.adj,p.50M.adj,na.rm = TRUE))))
+arrows(win.50M.beg/1e6,-log10(p.50M.adj),(win.50M.beg+50e6)/1e6,len=0,col="#D3C991",lwd = 2)
+
+#superimpose alpha(0.05)
+abline(h =-log10(0.05),col="black",lty=2)
+#hmp threshold
+abline(h=-log10(qharmonicmeanp(0.05,L)),col="grey",lty=2)
+
+abline(h=-log10(0.3262216),col="grey",lty=3)
+
+
+```
+```{r}
+win.50M.beg[which(p.50M.adj<=0.05)]
+```
+```{r}
+#find position of the most significant individual p-value
+
+(peakpos = gwas$pos[gwas$p.adj==min(gwas$p.adj)])
+```
+```{r}
+#test with windows centred at most sig SNP
+#100base pairs
+wlen = 100
+R = which(abs(gwas$pos-peakpos)<wlen)
+p.R.adjust = p.hmp(gwas$p[R],gwas$w[R],L)/sum(gwas$w[R])
+print(p.R.adjust)
+
+```
+```{r}
+wlen = 1e4
+print(wlen)
+R = which(abs(gwas$pos-peakpos)<wlen)
+p.R.adjust = p.hmp(gwas$p[R],gwas$w[R],L)/sum(gwas$w[R])
+print(p.R.adjust)
+```
+```{r}
+wlen = 1e7
+R = which(abs(gwas$pos-peakpos)<wlen)
+p.R.adjust = p.hmp(gwas$p[R],gwas$w[R],L)/sum(gwas$w[R])
+print(p.R.adjust)
+```
+```{r}
+#find smallest window significant at alpha=0.05
+f = function(wlen){
+  R = which(abs(gwas$pos-peakpos)<wlen)
+  p.R.adjust = p.hmp(gwas$p[R],gwas$w[R],L)/sum(gwas$w[R])
+  return(p.R.adjust-0.05)
+
+}
+(wlen.opt = uniroot(f,c(3e7,4e7))$root)
+```
+```{r}
+#show that the group of SNPs in this window is indeed significant
+wlen = wlen.opt
+R = which(abs(gwas$pos-peakpos)<wlen)
+p.R.adjust = p.hmp(gwas$p[R],gwas$w[R],L)/sum(gwas$w[R])
+print(p.R.adjust)
+
+```
+```{r}
+print(length(R))
+```
+
